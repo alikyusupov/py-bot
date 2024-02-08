@@ -17,12 +17,12 @@ headers = {
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-US,en;q=0.9,ru;q=0.8',
     'cache-control': 'max-age=0',
-    'content-length': 62,
+    'content-length': '62',
     'content-type': 'application/x-www-form-urlencoded',
     'cookie': 'atoken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDcxMzkwMTEsImJ1aWQiOjQwMzQ0NCwidXNlcl9pZCI6MTEyOTQwNDcsImxvZ2luX2luZm8iOjkzNjY5MzY0OTE3MjQ1MjQyMzQwMjk2MDA1ODM5NDM0NTQ3NH0.-H3YeIOO5fWfG1c-79-RhzBA-MDaWo5JY8dz5q65DWk',
     'origin': 'https://math-ege.sdamgia.ru',
     'referer': 'https://math-ege.sdamgia.ru/',
-    'upgrade-insecure-requests': 1,
+    'upgrade-insecure-requests': '1',
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36 OPR/62.0.3331.99'
 }
 r = s.post('https://sdamgia.ru', data=data, headers=headers)
