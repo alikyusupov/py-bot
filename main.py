@@ -1,69 +1,54 @@
-#!/usr/bin/env python
-# pylint: disable=unused-argument
-# This program is dedicated to the public domain under the CC0 license.
+import telebot
+from telebot import types
+import requests
+import json
 
-"""
-Basic example for a bot that uses inline keyboards. For an in-depth explanation, check out
- https://github.com/python-telegram-bot/python-telegram-bot/wiki/InlineKeyboard-Example.
-"""
-import logging
+bot = telebot.TeleBot('6977710887:AAGfoal03KVByfACrLxM6dcjgX6dd48OWs0')
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
+def get_general_data():
+    response = requests.get('https://math-ege.sdamgia.ru/newapi/general')
+    parsedData = json.loads(response.content)
+    return parsedData
 
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
-
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Sends a message with three inline buttons attached."""
-    keyboard = [
+@bot.message_handler(commands=['start'])
+def main(message):
+    layout = types.InlineKeyboardMarkup(
         [
-            InlineKeyboardButton("Option 1", callback_data="1"),
-            InlineKeyboardButton("Option 2", callback_data="2"),
-        ],
-        [InlineKeyboardButton("Option 3", callback_data="3")],
-    ]
+            [
+                types.InlineKeyboardButton('Темы', callback_data='themes'),
+            ],
+        ]
+    )
+    bot.send_message(message.chat.id, '<b>Меню</b>', reply_markup=layout, parse_mode='html')
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+def create_layout():
+    data = get_general_data()
+    iterableData = sorted(data['constructor'], key=lambda k: k['title'])
+    filteredData = list(filter(lambda item: type(item.get("subtopics")) is list, iterableData))
+    layout = types.InlineKeyboardMarkup()
+    for item in filteredData:
+        layout.add(types.InlineKeyboardButton(item['title']+ ' ' + '(' +str(item['amount'])+ ')', callback_data=item['issue']))
+    return layout
 
-    await update.message.reply_text("Please choose:", reply_markup=reply_markup)
+@bot.callback_query_handler(func=lambda callback: True)
+def callback_handler(callback):
+    if  callback.data == 'themes':
+        bot.send_message(callback.message.chat.id, '<b>Темы</b>', reply_markup=create_layout(), parse_mode='html')
+    else:
+        bot.send_message(callback.message.chat.id, '<b>Разделы</b>', reply_markup=create_subtopics_layout(callback.data), parse_mode='html')
+        
+def get_subtopics(issue):
+    data = get_general_data()
+    iterableData = data['constructor']
+    element = list(filter(lambda item: item.get("issue") == issue, iterableData))
+    return sorted(element[0]['subtopics'], key=lambda k: k['title'])
 
-
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Parses the CallbackQuery and updates the message text."""
-    query = update.callback_query
-
-    # CallbackQueries need to be answered, even if no notification to the user is needed
-    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-    await query.answer()
-
-    await query.edit_message_text(text=f"Selected option: {query.data}")
-
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Displays info on how to use the bot."""
-    await update.message.reply_text("Use /start to test this bot.")
-
-
-def main() -> None:
-    """Run the bot."""
-    # Create the Application and pass it your bot's token.
-    application = Application.builder().token("6803479333:AAH-q47fG_ICMIKEfmAn-mtZZ2oi6al9mr0").build()
-
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(button))
-    application.add_handler(CommandHandler("help", help_command))
-
-    # Run the bot until the user presses Ctrl-C
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+def create_subtopics_layout(issue):
+    subtopics = get_subtopics(issue)
+    layout = types.InlineKeyboardMarkup()
+    for sub in subtopics:
+        layout.add(types.InlineKeyboardButton(sub['title']+ ' ' + '(' +str(sub['amount'])+ ')', url='https://math-ege.sdamgia.ru/test?theme=' + str(sub['id'])))
+    return layout
 
 
-if __name__ == "__main__":
-    main()
+bot.polling(none_stop=True)
