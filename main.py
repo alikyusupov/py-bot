@@ -3,52 +3,160 @@ from telebot import types
 import requests
 import json
 
-bot = telebot.TeleBot('6977710887:AAGfoal03KVByfACrLxM6dcjgX6dd48OWs0')
+bot = telebot.TeleBot('6803479333:AAH-q47fG_ICMIKEfmAn-mtZZ2oi6al9mr0')
+user_state = {}
 
 def get_general_data():
-    response = requests.get('https://math-ege.sdamgia.ru/newapi/general')
-    parsedData = json.loads(response.content)
-    return parsedData
+    try:
+        response = requests.get('https://math-ege.sdamgia.ru/newapi/general')
+        response.raise_for_status()
+        parsed_data = json.loads(response.content)
+        return parsed_data
+    except Exception as e:
+        bot.send_message(chat_id, f"Произошла ошибка при получении данных: {str(e)}")
+        return None
 
 @bot.message_handler(commands=['start'])
-def main(message):
+def welcome(message):
+    welcome_text = """
+    Привет! Я бот для работы с заданиями по математике ЕГЭ. Выбери интересующий раздел, чтобы начать.
+    """
+    
     layout = types.InlineKeyboardMarkup(
         [
             [
-                types.InlineKeyboardButton('Темы', callback_data='themes'),
+                types.InlineKeyboardButton('Начать', callback_data='start'),
             ],
         ]
     )
-    bot.send_message(message.chat.id, '<b>Меню</b>', reply_markup=layout, parse_mode='html')
-
-def create_layout():
-    data = get_general_data()
-    iterableData = sorted(data['constructor'], key=lambda k: k['title'])
-    filteredData = list(filter(lambda item: type(item.get("subtopics")) is list, iterableData))
-    layout = types.InlineKeyboardMarkup()
-    for item in filteredData:
-        layout.add(types.InlineKeyboardButton(item['title']+ ' ' + '(' +str(item['amount'])+ ')', callback_data=item['issue']))
-    return layout
+    
+    msg = bot.send_message(message.chat.id, welcome_text, reply_markup=layout)
 
 @bot.callback_query_handler(func=lambda callback: True)
 def callback_handler(callback):
-    if  callback.data == 'themes':
-        bot.send_message(callback.message.chat.id, '<b>Темы</b>', reply_markup=create_layout(), parse_mode='html')
+    chat_id = callback.message.chat.id
+    
+    try:
+        bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="Новый текст сообщения или что-то еще")
+    except Exception as e:
+        pass
+
+    if callback.data == 'start':
+        layout = types.InlineKeyboardMarkup(
+            [
+                [
+                    types.InlineKeyboardButton('Темы', callback_data='themes'),
+                    types.InlineKeyboardButton('Справка', callback_data='button2'),
+                ],
+                [
+                    types.InlineKeyboardButton('Кодификатор', callback_data='codificator'),
+                ],
+            ]
+        )
+        user_state[chat_id] = 'start'
+        bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
+    elif callback.data == 'themes':
+        try:
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="Новый текст сообщения для тем или что-то еще")
+        except Exception as e:
+            pass
+
+        layout = types.InlineKeyboardMarkup()
+
+        themes_list = [
+            'Тема 1', 'Тема 2', 'Тема 3', 'Тема 4', 'Тема 5',
+            'Тема 6', 'Тема 7', 'Тема 8', 'Тема 9', 'Тема 10',
+            'Тема 11', 'Тема 12', 'Тема 13', 'Тема 14', 'Тема 15',
+            'Тема 16', 'Тема 17', 'Тема 18', 'Тема 19', 'Тема 20',
+            'Тема 21', 'Тема 22', 'Тема 23', 'Тема 24', 'Тема 25',
+            'Тема 26', 'Тема 27', 'Тема 28', 'Тема 29', 'Тема 30',
+            'Тема 31', 'Тема 32', 'Тема 33', 'Тема 34', 'Тема 35',
+            'Тема 36', 'Тема 37', 'Тема 38', 'Тема 39', 'Тема 40',
+            # добавьте остальные темы
+        ]
+
+        for theme in themes_list:
+            layout.add(types.InlineKeyboardButton(theme, callback_data=f'theme_{theme.lower().replace(" ", "_")}'))
+
+        user_state[chat_id] = 'themes'
+        bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Темы</b>', reply_markup=layout, parse_mode='html')
+    elif callback.data == 'button2':
+        try:
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="New text for the help message or something else")
+        except Exception as e:
+            pass
+
+        instruction_text = """<b>Instructions for using the bot:</b>
+
+        1. Bot startup:
+           • Press the "Start" button or another command suggested by the bot to activate it.
+
+        2. Familiarize yourself with the commands:
+           • Most bots support certain commands. For example, "/help", "/info" or "/commands" for getting a list of available commands."""
+        layout = types.InlineKeyboardMarkup(
+            [
+                [
+                    types.InlineKeyboardButton('Topics', callback_data='themes'),
+                    types.InlineKeyboardButton('Help', callback_data='button2'),
+                    types.InlineKeyboardButton('Codificator', callback_data='codificator'),
+                    types.InlineKeyboardButton('Back', callback_data='back')
+                ],
+            ]
+        )
+        user_state[chat_id] = 'button2'
+        bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text=instruction_text, reply_markup=layout, parse_mode='html')
+    elif callback.data == 'back':
+        try:
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="New text for the back button message or something else")
+        except Exception as e:
+            pass
+
+        if chat_id in user_state and user_state[chat_id] == 'themes':
+            layout = types.InlineKeyboardMarkup(
+                [
+                    [
+                        types.InlineKeyboardButton('Topics', callback_data='themes'),
+                        types.InlineKeyboardButton('Help', callback_data='button2'),
+                    ],
+                    [
+                        types.InlineKeyboardButton('Codificator', callback_data='codificator'),
+                    ],
+                ]
+            )
+            user_state[chat_id] = 'start'
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Main Menu</b>', reply_markup=layout, parse_mode='html')
+        elif chat_id in user_state and user_state[chat_id] == 'button2':
+            layout = types.InlineKeyboardMarkup(
+                [
+                    [
+                        types.InlineKeyboardButton('Topics', callback_data='themes'),
+                        types.InlineKeyboardButton('Help', callback_data='button2'),
+                    ],
+                    [
+                        types.InlineKeyboardButton('Codificator', callback_data='codificator'),
+                    ],
+                ]
+            )
+            user_state[chat_id] = 'start'
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Main Menu</b>', reply_markup=layout, parse_mode='html')
+    elif callback.data == 'codificator':
+        try:
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="New text for the codificator button message or something else")
+        except Exception as e:
+            pass
+
+        layout = types.InlineKeyboardMarkup(
+            [
+                [
+                    types.InlineKeyboardButton('Back', callback_data='back'),
+                ],
+            ]
+        )
+        user_state[chat_id] = 'codificator'
+        bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Codificator</b>', reply_markup=layout, parse_mode='html')
     else:
-        bot.send_message(callback.message.chat.id, '<b>Разделы</b>', reply_markup=create_subtopics_layout(callback.data), parse_mode='html')
-        
-def get_subtopics(issue):
-    data = get_general_data()
-    iterableData = data['constructor']
-    element = list(filter(lambda item: item.get("issue") == issue, iterableData))
-    return sorted(element[0]['subtopics'], key=lambda k: k['title'])
-
-def create_subtopics_layout(issue):
-    subtopics = get_subtopics(issue)
-    layout = types.InlineKeyboardMarkup()
-    for sub in subtopics:
-        layout.add(types.InlineKeyboardButton(sub['title']+ ' ' + '(' +str(sub['amount'])+ ')', url='https://math-ege.sdamgia.ru/test?theme=' + str(sub['id'])))
-    return layout
-
+        url = f'https://math-ege.sdamgia.ru/test?theme={callback.data}'
+        bot.send_message(chat_id, f'<b>{callback.data}</b>', parse_mode='html')
+        bot.send_message(chat_id, f'<a href="{url}">Link to the site</a>', parse_mode='html', disable_web_page_preview=True)
 
 bot.polling(none_stop=True)
