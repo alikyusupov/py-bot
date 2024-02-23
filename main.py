@@ -25,10 +25,24 @@ def get_general_data():
 # Обработчик команды /start
 @bot.message_handler(commands=['start'])
 def welcome(message):
-    # Приветственный текст и кнопка "Начать"
-    welcome_text = """
-    Привет! Я бот для работы с заданиями по математике ЕГЭ. Выбери интересующий раздел, чтобы начать.
+    # Получаем имя пользователя
+    user_name = message.from_user.first_name
+
+    # Приветственный текст с именем пользователя и кнопка "Начать"
+    welcome_text = f"""
+    🌟 Добро пожаловать, {user_name}! 🌟
+
+Приготовьтесь к захватывающему путешествию в мир математики ЕГЭ! Я - ваш верный спутник, бот, готовый помочь вам в решении задач и освоении самых интересных тем.
+
+🚀 Нажмите кнопку "Начать", чтобы взлететь в атмосферу знаний и уверенности в своих математических способностях! Выберите раздел, который вас привлекает, и дайте старт своему учебному полету к успеху.
+
+🎓 Не просто бот, а ваш личный наставник в мире математики! Приготовьтесь к захватывающему обучению и уверенному совладению с заданиями ЕГЭ. Давайте начнем этот увлекательный путь вместе!
+
+🔥 Готовы к приключениям? Тогда вперед, нажмите "Начать" и дайте старт математическому волшебству! 🚀
+
     """
+
+    # Создаем кнопку "Начать"
     layout = types.InlineKeyboardMarkup(
         [
             [
@@ -36,7 +50,9 @@ def welcome(message):
             ],
         ]
     )
-    msg = bot.send_message(message.chat.id, welcome_text, reply_markup=layout)
+
+    # Отправляем приветствие с кнопкой "Начать"
+    bot.send_message(message.chat.id, welcome_text, reply_markup=layout)
 
 # Обработчик для inline-кнопок
 @bot.callback_query_handler(func=lambda callback: True)
@@ -50,28 +66,24 @@ def callback_handler(callback):
         pass
 
     if callback.data == 'start':
-        # Обработка команды "Начать"
+        # ... (код для команды "Начать")
         layout = types.InlineKeyboardMarkup(
             [
                 [
                     types.InlineKeyboardButton('Темы', callback_data='themes'),
+                ],
+                [
                     types.InlineKeyboardButton('Справка', callback_data='button2'),
-                    types.InlineKeyboardButton('Справочник', callback_data='reference'),  # Новая кнопка
+                ],
+                [
+                    types.InlineKeyboardButton('Справочник', callback_data='reference'),
                 ],
             ]
         )
         user_state[chat_id] = 'start'
         bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
-    # ... (продолжение комментариев)
-
     elif callback.data == 'themes':
-        # Обработка команды "Темы"
-        try:
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="Новый текст сообщения для тем или что-то еще")
-        except Exception as e:
-            pass
-
-        # Создание inline-кнопок для списка тем
+        # ... (код для команды "Темы")
         layout = types.InlineKeyboardMarkup()
         themes_list = [
             '1.Планиметрия', '2.Векторы', '3.Стереометрия', '4.Начала теории вероятностей', '5.Вероятности сложных событий', 
@@ -82,20 +94,14 @@ def callback_handler(callback):
         ]
         for theme in themes_list:
             layout.add(types.InlineKeyboardButton(theme, callback_data=f'theme_{theme.lower().replace(" ", "_")}'))
-
+        layout.add(types.InlineKeyboardButton('Назад', callback_data='back'))
         user_state[chat_id] = 'themes'
         bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Темы</b>', reply_markup=layout, parse_mode='html')
     elif callback.data == 'button2':
-        # Обработка команды "Справка"
-        try:
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="Новый текст для справочного сообщения или чего-то еще")
-        except Exception as e:
-            pass
-
-        # Текст инструкции и кнопки
-        instruction_text = """<b>Инструкции по использованию бота:</b>
-        1. Запуск бота: Нажмите кнопку "Пуск" или другую команду, предложенную ботом, чтобы активировать его.
-        2. Ознакомьтесь с командами: Большинство ботов поддерживают определенные команды. Например, "/help", "/info" или "/commands" для получения списка доступных команд."""
+        # ... (код для команды "Справка")
+        instruction_text = f"""<b>Как использовать бота:</b>
+        1. <i>Запуск бота:</i> Нажмите кнопку "Пуск" или другую команду, предложенную ботом, чтобы активировать его.
+        2. <i>Ознакомьтесь с командами:</i> Большинство ботов поддерживают определенные команды. Например, "/help", "/info" или "/commands" для получения списка доступных команд."""
         layout = types.InlineKeyboardMarkup(
             [
                 [
@@ -106,13 +112,7 @@ def callback_handler(callback):
         user_state[chat_id] = 'button2'
         bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text=instruction_text, reply_markup=layout, parse_mode='html')
     elif callback.data == 'reference':
-        # Обработка команды "Справочник"
-        try:
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="Выберите тему из справочника:")
-        except Exception as e:
-            pass
-
-        # Создание inline-кнопок для справочника
+        # ... (код для команды "Справочник")
         layout = types.InlineKeyboardMarkup()
         reference_themes = [
             '1.Планиметрия', '2.Векторы', '3.Стереометрия', '4.Начала теории вероятностей', '5.Вероятности сложных событий', 
@@ -123,55 +123,61 @@ def callback_handler(callback):
         ]
         for theme in reference_themes:
             layout.add(types.InlineKeyboardButton(theme, callback_data=f'reference_{theme.lower().replace(" ", "_")}'))
-
+        layout.add(types.InlineKeyboardButton('Назад', callback_data='back'))
         user_state[chat_id] = 'reference'
         bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Справочник:</b>', reply_markup=layout, parse_mode='html')
     elif callback.data == 'back':
-        # Обработка команды "Назад"
-        try:
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id - 1, text="Новый текст для справочного сообщения или чего-то еще")
-        except Exception as e:
-            pass
-
-        # Возврат в предыдущее меню
+        # ... (код для команды "Назад")
         if chat_id in user_state and user_state[chat_id] == 'themes':
             layout = types.InlineKeyboardMarkup(
                 [
-                    [
-                        types.InlineKeyboardButton('Темы', callback_data='themes'),
-                        types.InlineKeyboardButton('Справка', callback_data='button2'),
-                        types.InlineKeyboardButton('Справочник', callback_data='reference'),  # Новая кнопка
-                    ],
-                ]
+                [
+                    types.InlineKeyboardButton('Темы', callback_data='themes'),
+                ],
+                [
+                    types.InlineKeyboardButton('Справка', callback_data='button2'),
+                ],
+                [
+                    types.InlineKeyboardButton('Справочник', callback_data='reference'),
+                ],
+            ]
             )
             user_state[chat_id] = 'start'
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
         elif chat_id in user_state and user_state[chat_id] == 'button2':
             layout = types.InlineKeyboardMarkup(
                 [
-                    [
-                        types.InlineKeyboardButton('Темы', callback_data='themes'),
-                        types.InlineKeyboardButton('Справка', callback_data='button2'),
-                        types.InlineKeyboardButton('Справочник', callback_data='reference'),  # Новая кнопка
-                    ],
-                ]
+                [
+                    types.InlineKeyboardButton('Темы', callback_data='themes'),
+                ],
+                [
+                    types.InlineKeyboardButton('Справка', callback_data='button2'),
+                ],
+                [
+                    types.InlineKeyboardButton('Справочник', callback_data='reference'),
+                ],
+            ]
             )
             user_state[chat_id] = 'start'
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
         elif chat_id in user_state and user_state[chat_id] == 'reference':
             layout = types.InlineKeyboardMarkup(
                 [
-                    [
-                        types.InlineKeyboardButton('Темы', callback_data='themes'),
-                        types.InlineKeyboardButton('Справка', callback_data='button2'),
-                        types.InlineKeyboardButton('Справочник', callback_data='reference'),  # Новая кнопка
-                    ],
-                ]
+                [
+                    types.InlineKeyboardButton('Темы', callback_data='themes'),
+                ],
+                [
+                    types.InlineKeyboardButton('Справка', callback_data='button2'),
+                ],
+                [
+                    types.InlineKeyboardButton('Справочник', callback_data='reference'),
+                ],
+            ]
             )
             user_state[chat_id] = 'start'
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
     else:
-        # Обработка других вариантов inline-кнопок
+        # ... (код для других inline-кнопок)
         url = f'https://math-ege.sdamgia.ru/test?theme={callback.data}'
         bot.send_message(chat_id, f'<b>{callback.data}</b>', parse_mode='html')
         bot.send_message(chat_id, f'<a href="{url}">Link to the site</a>', parse_mode='html', disable_web_page_preview=True)
