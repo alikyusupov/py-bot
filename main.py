@@ -81,7 +81,7 @@ def callback_handler(callback):
             ]
         )
         user_state[chat_id] = 'start'
-        bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
+        bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню Бота</b>', reply_markup=layout, parse_mode='html')
     elif callback.data == 'themes':
         # ... (код для команды "Темы")
         layout = types.InlineKeyboardMarkup()
@@ -143,7 +143,7 @@ def callback_handler(callback):
             ]
             )
             user_state[chat_id] = 'start'
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню Бота</b>', reply_markup=layout, parse_mode='html')
         elif chat_id in user_state and user_state[chat_id] == 'button2':
             layout = types.InlineKeyboardMarkup(
                 [
@@ -159,7 +159,7 @@ def callback_handler(callback):
             ]
             )
             user_state[chat_id] = 'start'
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню Бота</b>', reply_markup=layout, parse_mode='html')
         elif chat_id in user_state and user_state[chat_id] == 'reference':
             layout = types.InlineKeyboardMarkup(
                 [
@@ -175,7 +175,7 @@ def callback_handler(callback):
             ]
             )
             user_state[chat_id] = 'start'
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню</b>', reply_markup=layout, parse_mode='html')
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='<b>Меню Бота</b>', reply_markup=layout, parse_mode='html')
     else:
         # ... (код для других inline-кнопок)
         url = f'https://math-ege.sdamgia.ru/test?theme={callback.data}'
