@@ -86,20 +86,21 @@ def callback_handler(callback):
         except Exception as e:
             pass
 
-        instruction_text = """<b>Instructions for using the bot:</b>
+        instruction_text = """<b>Инструкции по использованию бота:</b>
 
-        1. Bot startup:
-           • Press the "Start" button or another command suggested by the bot to activate it.
+        1. Запуск бота:
+           • Нажмите кнопку "Пуск" или другую команду, предложенную ботом, чтобы активировать его.
 
-        2. Familiarize yourself with the commands:
-           • Most bots support certain commands. For example, "/help", "/info" or "/commands" for getting a list of available commands."""
+        2. Ознакомьтесь с командами:
+           • Большинство ботов поддерживают определенные команды. Например, "/help", "/info" или "/commands" для получения списка доступных команд."""
         layout = types.InlineKeyboardMarkup(
             [
                 [
-                    types.InlineKeyboardButton('Topics', callback_data='themes'),
-                    types.InlineKeyboardButton('Help', callback_data='button2'),
-                    types.InlineKeyboardButton('Codificator', callback_data='codificator'),
-                    types.InlineKeyboardButton('Back', callback_data='back')
+                    types.InlineKeyboardButton('Темы', callback_data='themes'),
+                    types.InlineKeyboardButton('Справка', callback_data='button2'),
+                ],
+                [
+                    types.InlineKeyboardButton('Назад', callback_data='back')
                 ],
             ]
         )
@@ -118,9 +119,6 @@ def callback_handler(callback):
                         types.InlineKeyboardButton('Topics', callback_data='themes'),
                         types.InlineKeyboardButton('Help', callback_data='button2'),
                     ],
-                    [
-                        types.InlineKeyboardButton('Codificator', callback_data='codificator'),
-                    ],
                 ]
             )
             user_state[chat_id] = 'start'
@@ -129,11 +127,8 @@ def callback_handler(callback):
             layout = types.InlineKeyboardMarkup(
                 [
                     [
-                        types.InlineKeyboardButton('Topics', callback_data='themes'),
-                        types.InlineKeyboardButton('Help', callback_data='button2'),
-                    ],
-                    [
-                        types.InlineKeyboardButton('Codificator', callback_data='codificator'),
+                        types.InlineKeyboardButton('Темы', callback_data='themes'),
+                        types.InlineKeyboardButton('Справка', callback_data='button2'),
                     ],
                 ]
             )
@@ -148,7 +143,7 @@ def callback_handler(callback):
         layout = types.InlineKeyboardMarkup(
             [
                 [
-                    types.InlineKeyboardButton('Back', callback_data='back'),
+                    types.InlineKeyboardButton('Назад', callback_data='back'),
                 ],
             ]
         )
