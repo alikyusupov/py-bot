@@ -5,11 +5,31 @@ import asyncio
 from playwright.async_api import async_playwright
 import json
 
+USER_NAME = ''
 GENERAL_DATA = {}
+SBR_WS_CDP = 'wss://brd-customer-hl_7b3b4e62-zone-scraping_browser1-country-ru:wgdghplqrzf8@brd.superproxy.io:9222'
+HELP_TEXT = welcome_text = f"""
+    Здесь будет текст который объясняет как пользоваться ботом
+
+    Под текстом будет кнопка 'Назад'
+    """
 
 bot = telebot.TeleBot('6977710887:AAGfoal03KVByfACrLxM6dcjgX6dd48OWs0')
 
-SBR_WS_CDP = 'wss://brd-customer-hl_7b3b4e62-zone-scraping_browser1-country-ru:wgdghplqrzf8@brd.superproxy.io:9222'
+def generate_intro(name):
+    return f"""
+    🌟 Добро пожаловать, {name}! 🌟
+
+Приготовьтесь к захватывающему путешествию в мир математики ЕГЭ! Я - ваш верный спутник, бот, готовый помочь вам в решении задач и освоении самых интересных тем.
+
+🚀 Нажмите кнопку "Начать", чтобы взлететь в атмосферу знаний и уверенности в своих математических способностях! Выберите раздел, который вас привлекает, и дайте старт своему учебному полету к успеху.
+
+🎓 Не просто бот, а ваш личный наставник в мире математики! Приготовьтесь к захватывающему обучению и уверенному совладению с заданиями ЕГЭ. Давайте начнем этот увлекательный путь вместе!
+
+🔥 Готовы к приключениям? Тогда вперед, нажмите "Начать" и дайте старт математическому волшебству! 🚀
+
+    """
+
 
 async def run(pw):
     global GENERAL_DATA
@@ -42,30 +62,54 @@ asyncio.run(main())
 
 
 @bot.message_handler(commands=['start'])
-def main(message):
-    user_name = message.from_user.first_name
-
+def do_start(message):
+    global USER_NAME
+    USER_NAME = message.from_user.first_name
     # Приветственный текст с именем пользователя и кнопка "Начать"
-    welcome_text = f"""
-    🌟 Добро пожаловать, {user_name}! 🌟
+    welcome_text = generate_intro(USER_NAME)
+    layout = create_start_layout()
+    bot.send_message(message.chat.id, welcome_text, reply_markup=layout, parse_mode='html')
 
-Приготовьтесь к захватывающему путешествию в мир математики ЕГЭ! Я - ваш верный спутник, бот, готовый помочь вам в решении задач и освоении самых интересных тем.
+@bot.message_handler(commands=['topics'])
+def do_topics(message):
+    # Приветственный текст с именем пользователя и кнопка "Начать"
+    bot.send_message(message.chat.id, '<b>Темы</b>', reply_markup=create_layout(), parse_mode='html')
 
-🚀 Нажмите кнопку "Начать", чтобы взлететь в атмосферу знаний и уверенности в своих математических способностях! Выберите раздел, который вас привлекает, и дайте старт своему учебному полету к успеху.
+@bot.message_handler(commands=['help'])
+def do_help(message):
+    # Приветственный текст с именем пользователя и кнопка "Начать"
+    bot.send_message(message.chat.id, HELP_TEXT, reply_markup=create_help_layout() , parse_mode='html')
 
-🎓 Не просто бот, а ваш личный наставник в мире математики! Приготовьтесь к захватывающему обучению и уверенному совладению с заданиями ЕГЭ. Давайте начнем этот увлекательный путь вместе!
+@bot.callback_query_handler(func=lambda callback: True)
+def callback_handler(callback):
+    global USER_NAME
+    if  callback.data == 'topics':
+        bot.send_message(callback.message.chat.id, '<b>Темы</b>', reply_markup=create_layout(), parse_mode='html')
+    elif  callback.data == 'help':
+        bot.send_message(callback.message.chat.id, HELP_TEXT, reply_markup=create_help_layout() , parse_mode='html')
+    elif  callback.data == 'back':
+        bot.send_message(callback.message.chat.id, generate_intro(USER_NAME), reply_markup=create_start_layout(), parse_mode='html')
+    else:
+        bot.send_message(callback.message.chat.id, '<b>Разделы</b>', reply_markup=create_subtopics_layout(callback.data), parse_mode='html')
+        
+def get_subtopics(issue):
+    global GENERAL_DATA
+    iterableData = GENERAL_DATA['constructor']
+    element = list(filter(lambda item: item.get("issue") == issue, iterableData))
+    return sorted(element[0]['subtopics'], key=lambda k: k['title'])
 
-🔥 Готовы к приключениям? Тогда вперед, нажмите "Начать" и дайте старт математическому волшебству! 🚀
-
-    """
+def create_start_layout():
     layout = types.InlineKeyboardMarkup(
         [
             [
-                types.InlineKeyboardButton('Начать', callback_data='themes'),
+                types.InlineKeyboardButton('Начать', callback_data='topics'),
+            ],
+            [
+                types.InlineKeyboardButton('Помощь', callback_data='help'),
             ],
         ]
     )
-    bot.send_message(message.chat.id, welcome_text, reply_markup=layout, parse_mode='html')
+    return layout
 
 def create_layout():
     global GENERAL_DATA
@@ -76,24 +120,16 @@ def create_layout():
         layout.add(types.InlineKeyboardButton(item['title']+ ' ' + '(' +str(item['amount'])+ ')', callback_data=item['issue']))
     return layout
 
-@bot.callback_query_handler(func=lambda callback: True)
-def callback_handler(callback):
-    if  callback.data == 'themes':
-        bot.send_message(callback.message.chat.id, '<b>Темы</b>', reply_markup=create_layout(), parse_mode='html')
-    else:
-        bot.send_message(callback.message.chat.id, '<b>Разделы</b>', reply_markup=create_subtopics_layout(callback.data), parse_mode='html')
-        
-def get_subtopics(issue):
-    global GENERAL_DATA
-    iterableData = GENERAL_DATA['constructor']
-    element = list(filter(lambda item: item.get("issue") == issue, iterableData))
-    return sorted(element[0]['subtopics'], key=lambda k: k['title'])
-
 def create_subtopics_layout(issue):
     subtopics = get_subtopics(issue)
     layout = types.InlineKeyboardMarkup()
     for sub in subtopics:
         layout.add(types.InlineKeyboardButton(sub['title']+ ' ' + '(' +str(sub['amount'])+ ')', url='https://math-ege.sdamgia.ru/test?theme=' + str(sub['id'])))
+    return layout
+
+def create_help_layout():
+    layout = types.InlineKeyboardMarkup()
+    layout.add(types.InlineKeyboardButton('Назад', callback_data='back'))
     return layout
 
 
