@@ -69,7 +69,6 @@ def main(message):
 
 def create_layout():
     global GENERAL_DATA
-    print(list(GENERAL_DATA.keys()))
     iterableData = sorted(GENERAL_DATA['constructor'], key=lambda k: k['title'])
     filteredData = list(filter(lambda item: type(item.get("subtopics")) is list, iterableData))
     layout = types.InlineKeyboardMarkup()
