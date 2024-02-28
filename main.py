@@ -114,7 +114,7 @@ def create_start_layout():
 def create_layout():
     global GENERAL_DATA
     iterableData = sorted(GENERAL_DATA['constructor'], key=lambda k: k['title'])
-    filteredData = list(filter(lambda item: type(item.get("subtopics")) is list, iterableData))
+    filteredData = list(filter(lambda item: type(item.get("subtopics")) is list and item.get("type") != 'extra', iterableData))
     layout = types.InlineKeyboardMarkup()
     for item in filteredData:
         layout.add(types.InlineKeyboardButton(item['title']+ ' ' + '(' +str(item['amount'])+ ')', callback_data=item['issue']))
