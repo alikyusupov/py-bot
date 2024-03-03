@@ -14,7 +14,7 @@ HELP_TEXT = welcome_text = f"""
     Под текстом будет кнопка 'Назад'
     """
 
-bot = telebot.TeleBot('6977710887:AAGfoal03KVByfACrLxM6dcjgX6dd48OWs0')
+bot = telebot.TeleBot('6803479333:AAH-q47fG_ICMIKEfmAn-mtZZ2oi6al9mr0')
 
 def generate_intro(name):
     return f"""
@@ -83,12 +83,14 @@ def do_help(message):
 @bot.callback_query_handler(func=lambda callback: True)
 def callback_handler(callback):
     global USER_NAME
-    if  callback.data == 'topics':
-        bot.send_message(callback.message.chat.id, '<b>Темы</b>', reply_markup=create_layout(), parse_mode='html')
+    if  callback.data == 'menu' or callback.data == 'back':
+        bot.send_message(callback.message.chat.id, '<b>Меню Бота</b>', reply_markup=create_menu_layout(), parse_mode='html')
     elif  callback.data == 'help':
         bot.send_message(callback.message.chat.id, HELP_TEXT, reply_markup=create_help_layout() , parse_mode='html')
-    elif  callback.data == 'back':
-        bot.send_message(callback.message.chat.id, generate_intro(USER_NAME), reply_markup=create_start_layout(), parse_mode='html')
+    elif  callback.data == 'instruction':
+        bot.send_message(callback.message.chat.id, 'Справочник', reply_markup=create_instruction_layout() , parse_mode='html')
+    elif  callback.data == 'topics':
+        bot.send_message(callback.message.chat.id, HELP_TEXT, reply_markup=create_layout() , parse_mode='html')
     else:
         bot.send_message(callback.message.chat.id, '<b>Разделы</b>', reply_markup=create_subtopics_layout(callback.data), parse_mode='html')
         
@@ -98,11 +100,32 @@ def get_subtopics(issue):
     element = list(filter(lambda item: item.get("issue") == issue, iterableData))
     return sorted(element[0]['subtopics'], key=lambda k: k['title'])
 
+def create_instruction_layout():
+    layout = types.InlineKeyboardButton
+
+def create_menu_layout():
+    layout = types.InlineKeyboardMarkup(
+        [
+            [
+                types.InlineKeyboardButton('Темы', callback_data='topics'),
+            ],
+            [
+                types.InlineKeyboardButton('Помощь', callback_data='help'),
+            ],
+            [
+                types.InlineKeyboardButton('Справочник', callback_data='instruction'),
+            ],
+        ]
+    )
+    return layout
+
+
+
 def create_start_layout():
     layout = types.InlineKeyboardMarkup(
         [
             [
-                types.InlineKeyboardButton('Начать', callback_data='topics'),
+                types.InlineKeyboardButton('Начать', callback_data='menu'),
             ],
             [
                 types.InlineKeyboardButton('Помощь', callback_data='help'),
