@@ -80,7 +80,7 @@ def do_help(message):
     # Приветственный текст с именем пользователя и кнопка "Начать"
     bot.send_message(message.chat.id, HELP_TEXT, reply_markup=create_help_layout() , parse_mode='html')
 
-@bot.callback_query_handler(func=lambda callback: True)
+@bot.callback_query_handler(func=lambda cb: True)
 def callback_handler(callback):
     global USER_NAME
     if  callback.data == 'menu' or callback.data == 'back':
@@ -88,11 +88,19 @@ def callback_handler(callback):
     elif  callback.data == 'help':
         bot.send_message(callback.message.chat.id, HELP_TEXT, reply_markup=create_help_layout() , parse_mode='html')
     elif  callback.data == 'instruction':
-        bot.send_message(callback.message.chat.id, 'Справочник', reply_markup=create_instruction_layout() , parse_mode='html')
+        bot.send_message(callback.message.chat.id, 'Справочник', reply_markup=create_layout(True) , parse_mode='html')
     elif  callback.data == 'topics':
-        bot.send_message(callback.message.chat.id, HELP_TEXT, reply_markup=create_layout() , parse_mode='html')
+        bot.send_message(callback.message.chat.id, HELP_TEXT, reply_markup=create_layout(False) , parse_mode='html')
+    elif  callback.data.startswith('common'):
+        parameter = callback.data.split('_')[1]
+        issueName = callback.data.split('_')[2]
+        if(parameter == 'data'):
+            bot.send_message(callback.message.chat.id, HELP_TEXT, reply_markup=create_subtopics_layout(issueName) , parse_mode='html')
+        else:
+            file = open('Тригонометрические формулы.pdf', 'rb')
+            bot.send_document(callback.message.chat.id, file)
     else:
-        bot.send_message(callback.message.chat.id, '<b>Разделы</b>', reply_markup=create_subtopics_layout(callback.data), parse_mode='html')
+        bot.send_message(callback.message.chat.id, 'Not Found(',)
         
 def get_subtopics(issue):
     global GENERAL_DATA
@@ -100,8 +108,6 @@ def get_subtopics(issue):
     element = list(filter(lambda item: item.get("issue") == issue, iterableData))
     return sorted(element[0]['subtopics'], key=lambda k: k['title'])
 
-def create_instruction_layout():
-    layout = types.InlineKeyboardButton
 
 def create_menu_layout():
     layout = types.InlineKeyboardMarkup(
@@ -134,13 +140,16 @@ def create_start_layout():
     )
     return layout
 
-def create_layout():
+def create_layout(withInstruction: bool=False):
     global GENERAL_DATA
     iterableData = sorted(GENERAL_DATA['constructor'], key=lambda k: k['title'])
     filteredData = list(filter(lambda item: type(item.get("subtopics")) is list and item.get("type") != 'extra', iterableData))
     layout = types.InlineKeyboardMarkup()
     for item in filteredData:
-        layout.add(types.InlineKeyboardButton(item['title']+ ' ' + '(' +str(item['amount'])+ ')', callback_data=item['issue']))
+        if (withInstruction == False):
+            layout.add(types.InlineKeyboardButton(item['title']+ ' ' + '(' +str(item['amount'])+ ')', callback_data='common_data_' + item['issue']))
+        else:
+            layout.add(types.InlineKeyboardButton(item['title'], callback_data='common_media_' + item['issue']))
     return layout
 
 def create_subtopics_layout(issue):
